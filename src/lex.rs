@@ -9,7 +9,6 @@ pub enum Token {
 	Number(i32),
 }
 
-#[derive(Eq, PartialEq, Hash)]
 enum State {
 	Start,
 	Number { start: usize },
