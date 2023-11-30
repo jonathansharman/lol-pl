@@ -3,10 +3,10 @@ use crate::lex::Token;
 #[derive(Debug)]
 pub enum Expr {
 	Number(i32),
-	Sum(Box<Expr>, Box<Expr>),
-	Diff(Box<Expr>, Box<Expr>),
-	Product(Box<Expr>, Box<Expr>),
-	Quotient(Box<Expr>, Box<Expr>),
+	Sum(Box<(Expr, Expr)>),
+	Diff(Box<(Expr, Expr)>),
+	Product(Box<(Expr, Expr)>),
+	Quotient(Box<(Expr, Expr)>),
 	Negation(Box<Expr>),
 }
 
@@ -24,12 +24,12 @@ fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), String> {
 		match op {
 			Token::Plus => {
 				let (operand, after_operand) = parse_term(after_op)?;
-				term = Expr::Sum(Box::new(term), Box::new(operand));
+				term = Expr::Sum(Box::new((term, operand)));
 				rest = after_operand;
 			}
 			Token::Minus => {
 				let (operand, after_operand) = parse_term(after_op)?;
-				term = Expr::Diff(Box::new(term), Box::new(operand));
+				term = Expr::Diff(Box::new((term, operand)));
 				rest = after_operand;
 			}
 			_ => break,
@@ -44,12 +44,12 @@ fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), String> {
 		match op {
 			Token::Divide => {
 				let (operand, after_operand) = parse_term(after_op)?;
-				factor = Expr::Quotient(Box::new(factor), Box::new(operand));
+				factor = Expr::Quotient(Box::new((factor, operand)));
 				rest = after_operand;
 			}
 			Token::Times => {
 				let (operand, after_operand) = parse_term(after_op)?;
-				factor = Expr::Product(Box::new(factor), Box::new(operand));
+				factor = Expr::Product(Box::new((factor, operand)));
 				rest = after_operand;
 			}
 			_ => break,
