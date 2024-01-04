@@ -1,5 +1,6 @@
 use std::io::{stdin, BufRead};
 
+mod interpret;
 mod lex;
 mod parse;
 
@@ -20,6 +21,9 @@ fn main() {
 				continue;
 			}
 		};
-		println!("{expr:?}");
+		match interpret::interpret(expr) {
+			Ok(n) => println!("{n}"),
+			Err(err) => eprintln!("runtime error: {err}"),
+		}
 	}
 }
