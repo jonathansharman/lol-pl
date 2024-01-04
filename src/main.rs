@@ -1,9 +1,14 @@
-use std::io::{stdin, BufRead};
+use std::{
+	collections::HashMap,
+	io::{stdin, BufRead},
+};
 
+mod interpret;
 mod lex;
 mod parse;
 
 fn main() {
+	let mut env = HashMap::new();
 	for line in stdin().lock().lines() {
 		let line = line.unwrap();
 		let tokens = match lex::lex(&line) {
@@ -20,6 +25,9 @@ fn main() {
 				continue;
 			}
 		};
-		println!("{expr:?}");
+		match interpret::interpret(expr, &mut env) {
+			Ok(n) => println!("{n}"),
+			Err(err) => eprintln!("runtime error: {err}"),
+		}
 	}
 }
