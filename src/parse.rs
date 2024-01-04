@@ -3,11 +3,13 @@ use crate::lex::Token;
 #[derive(Debug)]
 pub enum Expr {
 	Number(i32),
+	Variable(char),
 	Sum(Box<(Expr, Expr)>),
 	Diff(Box<(Expr, Expr)>),
 	Product(Box<(Expr, Expr)>),
 	Quotient(Box<(Expr, Expr)>),
 	Negation(Box<Expr>),
+	Assignment(char, Box<Expr>),
 }
 
 pub fn parse(tokens: &[Token]) -> Result<Expr, String> {
@@ -19,6 +21,17 @@ pub fn parse(tokens: &[Token]) -> Result<Expr, String> {
 }
 
 fn parse_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), String> {
+	if let Some((&Token::Variable(lhs), after_var)) = tokens.split_first() {
+		if let Some((Token::Assign, after_assign)) = after_var.split_first() {
+			let (rhs, rest) = parse_math_expr(after_assign)?;
+			let assignment = Expr::Assignment(lhs, Box::new(rhs));
+			return Ok((assignment, rest));
+		}
+	}
+	parse_math_expr(tokens)
+}
+
+fn parse_math_expr(tokens: &[Token]) -> Result<(Expr, &[Token]), String> {
 	let (mut term, mut rest) = parse_term(tokens)?;
 	while let Some((op, after_op)) = rest.split_first() {
 		match op {
@@ -60,6 +73,7 @@ fn parse_term(tokens: &[Token]) -> Result<(Expr, &[Token]), String> {
 
 fn parse_factor(tokens: &[Token]) -> Result<(Expr, &[Token]), String> {
 	match tokens.first() {
+		Some(Token::Variable(x)) => Ok((Expr::Variable(*x), &tokens[1..])),
 		Some(Token::Number(n)) => Ok((Expr::Number(*n), &tokens[1..])),
 		Some(Token::Minus) => {
 			let (expr, rest) = parse_expr(&tokens[1..])?;

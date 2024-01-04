@@ -6,6 +6,8 @@ pub enum Token {
 	Minus,
 	Times,
 	Divide,
+	Assign,
+	Variable(char),
 	Number(i32),
 }
 
@@ -27,6 +29,8 @@ pub fn lex(input: &str) -> Result<Vec<Token>, String> {
 				'-' => tokens.push(Token::Minus),
 				'*' => tokens.push(Token::Times),
 				'/' => tokens.push(Token::Divide),
+				':' => tokens.push(Token::Assign),
+				'A'..='z' => tokens.push(Token::Variable(c)),
 				'0'..='9' => state = State::Number { start: i },
 				_ => {
 					return Err(format!(
@@ -70,6 +74,18 @@ pub fn lex(input: &str) -> Result<Vec<Token>, String> {
 					tokens
 						.push(Token::Number(input[start..i].parse().unwrap()));
 					tokens.push(Token::Divide);
+					state = State::Start;
+				}
+				':' => {
+					tokens
+						.push(Token::Number(input[start..i].parse().unwrap()));
+					tokens.push(Token::Assign);
+					state = State::Start;
+				}
+				'A'..='z' => {
+					tokens
+						.push(Token::Number(input[start..i].parse().unwrap()));
+					tokens.push(Token::Variable(c));
 					state = State::Start;
 				}
 				_ => {
